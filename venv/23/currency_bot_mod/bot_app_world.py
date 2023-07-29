@@ -1,7 +1,12 @@
 import telebot
 import time
+from telebot import types
 from tokens import TELE_TOKEN
-from extensions_mod import CryptoConverter, APIException, currencie
+from extensions_world import CryptoConverter, APIException, currencie
+import bot_app_by
+
+
+
 # from background import keep_alive  #постоянный онлайн
 
 bot = telebot.TeleBot(TELE_TOKEN)
@@ -9,6 +14,10 @@ bot = telebot.TeleBot(TELE_TOKEN)
 
 @bot.message_handler(commands=['start'])
 def start(message: telebot.types.Message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton('/Мировые_курсы_валют')
+    btn2 = types.KeyboardButton('/Курсы_валют_Беларусь')
+    markup.add(btn1, btn2)
     text = 'Привет! Я Бот-Конвертер валют и я могу:  \n\n' \
            '- Показать список доступных валют и их кодов через команду: /values' \
            '\n\n-- Вывести конвертацию валюты через команду:\n' \
@@ -18,7 +27,21 @@ def start(message: telebot.types.Message):
            '\n\nПример ввода: USD RUB 10' \
            '\n\n' \
            'Напомнить, что я могу через команду: /help'
-    bot.send_message(message.chat.id, text)
+    bot.send_message(message.chat.id, text, reply_markup=markup)
+
+
+@bot.message_handler(commands=['Мировые_курсы_валют'])
+def start(message):
+    bot.send_message(message.chat.id,
+                     text="Отправляемся путешествовать по миру!".format(
+                         message.from_user))
+
+
+@bot.message_handler(commands=['Курсы_валют_Беларусь'])
+def start(message):
+    bot.send_message(message.chat.id,
+                     text="Мы в беларуси!".format(
+                         message.from_user))
 
 
 @bot.message_handler(commands=['help'])
@@ -71,4 +94,5 @@ def convert(message: telebot.types.Message):
 
 
 # keep_alive() #постоянный онлайн
-bot.polling()
+if __name__ == '__main__':
+    bot.polling()
