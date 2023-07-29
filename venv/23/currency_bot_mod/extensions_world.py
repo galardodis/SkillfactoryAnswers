@@ -1,6 +1,6 @@
 import requests
 import json
-from get_currencie import get_currencie
+from get_currencie_world import get_currencie
 
 currencie = get_currencie()
 
