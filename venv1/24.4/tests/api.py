@@ -1,6 +1,7 @@
 import requests
 
-class NoPetsError(Exeption):
+
+class NoPetsError(Exception):
     pass
 
 
@@ -86,7 +87,6 @@ class PetFriends:
         except:
             result = res.text
         return status, result
-
 
     def add_pet_photo(self, auth_key, pet_id):
         headers = {'auth_key': auth_key['key']}

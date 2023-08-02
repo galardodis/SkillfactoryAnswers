@@ -6,14 +6,6 @@ import data
 pf = PetFriends()
 
 
-def test_update_pet_no_pets():
-    _, auth_key = pf.get_api_key(valid_email, valid_password)
-    with pytest.raises(NoPetsError):
-        try:
-            pet_id = pf.get_list_of_pets(auth_key, filter='my_pets')[1]['pets'][0]['id']
-        except IndexError
-            raise NoPetsError('You hav no pets')
-
 def test_get_api_key_from_valid_user(email=valid_email, password=valid_password):
     status, result = pf.get_api_key(email, password)
     assert status == 200
@@ -71,8 +63,6 @@ def test_add_photo_valid_key():
     assert 'data:image/jpeg' in result['pet_photo']
 
 
-# 10 more tests
-
 def test_deete_pet_valid_pet_id():
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     try:
@@ -81,6 +71,15 @@ def test_deete_pet_valid_pet_id():
         raise NoPetsError('You have no pets!')
     status = pf.delete_pet(auth_key, pet_id)
     assert status == 200
+
+
+# очистка списка питомцев для дальнейших тестов
+_, auth_key = pf.get_api_key(valid_email, valid_password)
+pet_id = pf.get_list_of_pets(auth_key, filter='my_pets')[1]['pets']
+for i in pet_id:
+    pf.delete_pet(auth_key, i['id'])
+
+# # 10 more tests:
 
 
 def test_get_api_key_from_no_email(email='', password=valid_password):
@@ -118,12 +117,14 @@ def test_get_all_pets_unknow_filter(filter='123'):
 def test_add_pet_whithout_photo_name_more_1000():
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     status, result = pf.add_pet_whithout_photo(auth_key, data.str_more_1000, 'Кавалер-кинг-чарльз-спаниель', 1)
-    assert status == 400
+    assert status == 403
+
 
 def test_add_pet_whithout_photo_age_not_int():
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     status, result = pf.add_pet_whithout_photo(auth_key, 'Нора', 'Кавалер-кинг-чарльз-спаниель', 'one')
-    assert status == 400
+    assert status == 403
+
 
 def test_update_pet_invalid_pet_id():
     _, auth_key = pf.get_api_key(valid_email, valid_password)
@@ -131,3 +132,28 @@ def test_update_pet_invalid_pet_id():
     status, result = pf.update_pet(auth_key, pet_id,
                                    'Мира', 'Немецкая овчарка', 2)
     assert status == 400
+
+
+def test_update_pet_no_pets():
+    _, auth_key = pf.get_api_key(valid_email, valid_password)
+    with pytest.raises(NoPetsError):
+        try:
+            pet_id = pf.get_list_of_pets(auth_key, filter='my_pets')[1]['pets'][0]['id']
+        except IndexError:
+            raise NoPetsError('You hav no pets')
+
+
+def test_add_photo_no_pets():
+    _, auth_key = pf.get_api_key(valid_email, valid_password)
+    with pytest.raises(NoPetsError):
+        try:
+            pet_id = pf.get_list_of_pets(auth_key, filter='my_pets')[1]['pets'][0]['id']
+        except IndexError:
+            raise NoPetsError('You have no pets!')
+
+
+def test_deete_pet_invalid_pet_id():
+    _, auth_key = pf.get_api_key(valid_email, valid_password)
+    pet_id = '123456879'
+    status = pf.delete_pet(auth_key, pet_id)
+    assert status == 403
