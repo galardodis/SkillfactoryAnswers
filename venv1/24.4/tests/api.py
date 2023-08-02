@@ -1,7 +1,11 @@
 import requests
 
+class NoPetsError(Exeption):
+    pass
+
 
 class PetFriends:
+
     def __init__(self):
         self.base_url = 'https://petfriends.skillfactory.ru'
 
@@ -30,7 +34,7 @@ class PetFriends:
             result = res.text
         return status, result
 
-    def add_information_about_new_pets(self, auth_key, name='', animal_type='', age=int):
+    def add_new_pets_whith_photo(self, auth_key, name='', animal_type='', age=int):
         headers = {'auth_key': auth_key['key']}
         data = {
             'name': name,
@@ -52,7 +56,7 @@ class PetFriends:
         res = requests.delete(f'{self.base_url}/api/pets/{pet_id}', headers=headers)
         return res.status_code
 
-    def update_information_about_pet(self, auth_key, pet_id, name='', animal_type='', age=int):
+    def update_pet(self, auth_key, pet_id, name='', animal_type='', age=int):
         headers = {'auth_key': auth_key['key']}
         data = {
             'name': name,
@@ -60,7 +64,7 @@ class PetFriends:
             'age': age,
         }
         res = requests.put(f'{self.base_url}/api/pets/{pet_id}',
-                            headers=headers, data=data)
+                           headers=headers, data=data)
         status = res.status_code
         try:
             result = res.json()
@@ -68,3 +72,31 @@ class PetFriends:
             result = res.text
         return status, result
 
+    def add_pet_whithout_photo(self, auth_key, name='', animal_type='', age=int):
+        headers = {'auth_key': auth_key['key']}
+        data = {
+            'name': name,
+            'animal_type': animal_type,
+            'age': age,
+        }
+        res = requests.post(f'{self.base_url}/api/create_pet_simple', headers=headers, data=data)
+        status = res.status_code
+        try:
+            result = res.json()
+        except:
+            result = res.text
+        return status, result
+
+
+    def add_pet_photo(self, auth_key, pet_id):
+        headers = {'auth_key': auth_key['key']}
+        file = {'pet_photo': ('images/german.jpg',
+                              open('images/german.jpg', 'rb'), 'image/jpeg')}
+        res = requests.post(f'{self.base_url}/api/pets/set_photo/{pet_id}',
+                            headers=headers, files=file)
+        status = res.status_code
+        try:
+            result = res.json()
+        except:
+            result = res.text
+        return status, result
