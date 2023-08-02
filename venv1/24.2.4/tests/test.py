@@ -22,8 +22,5 @@ class TestCalc:
         with pytest.raises(ZeroDivisionError):
             self.calc.division(self, 1, 0)
 
-    def test_adding_unsuccsess(self):
-        assert self.calc.adding(self, 1, 1) == 3
-
     def teardown(self):
         print('Выполнение метода Teardown')
