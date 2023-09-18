@@ -2,18 +2,23 @@ import random
 import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from settings import valid_email, valid_password
 from helper import add_pets_with_photo, delete_all_pets
 import time
-
 
 # создаем список питомцев пользователя
 for _ in range(10):
     add_pets_with_photo()
 
+
 @pytest.fixture(autouse=True)
 def testing():
     pytest.driver = webdriver.Chrome()
+    # ожидание
+    pytest.driver.implicitly_wait(10)
+
     # Переходим на страницу авторизации
     pytest.driver.get('http://petfriends.skillfactory.ru/login')
 
@@ -51,6 +56,9 @@ def test_pet_foto():
     # Проверяем, что мы оказались на главной странице пользователя
     assert pytest.driver.find_element(by=By.CSS_SELECTOR, value='h2').text == "limbo"
     # Проверяем что хотя бы у половины питомцев есть фото
+    element = WebDriverWait(pytest.driver, 10).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, 'tbody>tr'))
+    )
     for pet in pytest.driver.find_elements(by=By.CSS_SELECTOR, value='tbody>tr'):
         if pet.find_element(By.CSS_SELECTOR, value='th>img').get_attribute('src'):
             pets_with_foto += 1
@@ -69,6 +77,9 @@ def test_pet_names_breed_age():
     # Проверяем, что мы оказались на главной странице пользователя
     assert pytest.driver.find_element(by=By.CSS_SELECTOR, value='h2').text == "limbo"
     # Проверяем что у всех питомцев есть имя, возраст и порода
+    element = WebDriverWait(pytest.driver, 10).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, 'tbody>tr'))
+    )
     for pet in pytest.driver.find_elements(by=By.CSS_SELECTOR, value='tbody>tr'):
         for i in pet.find_elements(By.CSS_SELECTOR, value='td:not(.smart_cell)'):
             assert len(i.text) > 0
@@ -86,6 +97,9 @@ def test_pet_names():
     pytest.driver.find_element(by=By.CSS_SELECTOR, value='a.nav-link[href="/my_pets"]').click()
     # Проверяем, что мы оказались на главной странице пользователя
     assert pytest.driver.find_element(by=By.CSS_SELECTOR, value='h2').text == "limbo"
+    element = WebDriverWait(pytest.driver, 10).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, 'tbody>tr'))
+    )
     # Проверяем что у всех питомцев разные имена
     for pet in pytest.driver.find_elements(by=By.CSS_SELECTOR, value='tbody>tr'):
         names.add(pet.find_elements(by=By.CSS_SELECTOR, value='td')[0].text)
@@ -115,11 +129,12 @@ def test_unic_pets():
         num = i
         for pet_comparison in pets[num + 1::]:
             assert (pet_main['foto'] != pet_comparison['foto'] or \
-                  pet_main['name'] != pet_comparison['name'] or \
-                  pet_main['bred'] != pet_comparison['bred'] or \
-                  pet_main['age'] != pet_comparison['age'])
+                    pet_main['name'] != pet_comparison['name'] or \
+                    pet_main['bred'] != pet_comparison['bred'] or \
+                    pet_main['age'] != pet_comparison['age'])
             num += 1
 
 
 # удаление питомцев
-delete_all_pets()
+def test_teardown():
+    delete_all_pets()
